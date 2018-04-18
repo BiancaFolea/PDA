@@ -1,0 +1,53 @@
+#include <iostream>       // std::cout
+#include <thread>         // std::thread
+#include <mutex>          // std::mutex
+#include <queue>          //coada std::queue
+#include <chrono>         //sleep std::chrono
+
+
+std::mutex mtx;
+std::queue <int> q;
+
+
+void producer()
+{
+	while (true)
+		std::cout << "Producem" << endl;
+		int item = rand() % 10;
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		mtx.lock();
+		if (q.size() < 10)
+		{
+			q.push(item);
+		}
+	mtx.unlock();
+}
+
+void consumer()
+{
+
+	while (true)
+		std::cout << "Consumam" << endl;
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+		mtx.lock();
+		if (q.size() > 0)
+		{
+			q.pop();
+		}
+	mtx.unlock();
+}
+
+
+int main()
+{
+	std::thread th1(producer);
+	std::thread th2(consumer);
+
+	th1.join();
+	th2.join();
+
+	return 0;
+}
+
+
+
