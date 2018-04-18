@@ -1,0 +1,67 @@
+#include <iostream>
+#include <string>
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <ctime>
+#include <cstdlib>
+#include <condition_variable>
+
+
+#define n_max 10
+
+
+std::mutex mtx_mutex;
+std::queue <int> q;
+int item;
+std::condition_variable prodCond, consCond;
+
+
+void producer()
+{
+    while(true)
+    {
+        std::cout << "Producem" << endl;
+		item = rand() % 10;
+		std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::unique_lock<std::mutex> lk(mtx_mutex);
+        while(q.size() == n_max)
+        {
+            prodCond.wait(lk, []{return true;});
+        }
+
+        q.push(item);
+        lk.unlock();
+        consCond.notify_all();
+    }
+}
+
+
+void consumer()
+{
+    while(true)
+    {
+        std::unique_lock<std::mutex> lk(mtx_mutex);
+        if(q.size() == 0)
+            consCond.wait(lk, []{return true;});
+        q.pop();
+
+        lk.unlock();
+        prodCond.notify_all();
+        std::cout << "Consumam" << endl;
+	    std::this_thread::sleep_for(std::chrono::seconds(5));
+
+    }
+}
+
+
+
+int main()
+{
+	std::thread t1(producer);
+    std::thread t2(consumer);
+    t1.join();
+    t2.join();
+    
+}
