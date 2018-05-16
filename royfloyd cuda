@@ -1,0 +1,41 @@
+#include<iostream>
+#define N 5
+#define INF 99999
+using namespace std;
+int k;
+float graph[N][N] = { 
+		0,3,9,8,3,
+		5,0,1,4,2,
+		6,6,0,4,5,
+		2,9,2,0,7,
+		7,9,3,2,0
+		};
+
+			
+__global__ void royFloyd( float graph[N][N], int k)
+{
+    int i = threadIdx.x;
+    int j = threadIdx.y;
+    
+
+	if(graph[i][k] + graph[k][j] < graph[i][j])
+		graph[i][j] = graph[i][k] + graph[k][j];
+
+}
+
+int main()
+{
+    
+    // Kernel invocation with one block of N * N * 1 threads
+    int numBlocks = 1;
+    dim3 threadsPerBlock(N, N);
+    royFloyd<<<numBlocks, threadsPerBlock>>>(graph, k);
+    int i,j;
+	for (i=0; i<N; i++)
+	{   cout<<i;
+		for (j=0; j<N; j++)
+			cout<<a[i][j];
+		cout<<endl;
+	}
+	return 0;
+}
